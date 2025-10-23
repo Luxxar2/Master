@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador de Combate D&D 5e - Temática Medieval</title>
+    <style>
+        /* Importar fuentes de Google Fonts para un toque medieval */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap');
+
+        /* --- Variables de Estilo Medieval --- */
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-medium: #2c2c2c;
+            --text-light: #f0e6d2; /* Pergamino */
+            --text-accent: #e5b300; /* Oro */
+            --border-color: #8B4513; /* Marrón para bordes rústicos */
+            --card-bg: rgba(44, 44, 44, 0.8); /* Fondo de tarjeta semitransparente */
+
+            /* Colores específicos del rastreador ajustados al tema */
+            --color-danger-medieval: #9c0f0f; /* Rojo oscuro de daño */
+            --color-success-medieval: #1e7e34; /* Verde oscuro de curación */
+        }
+
+        /* --- Estilos de Fondo y Cuerpo --- */
+        body {
+            margin: 0;
+            font-family: 'MedievalSharp', cursive; /* Fuente principal para el cuerpo */
+            color: var(--text-light);
+            background-color: var(--bg-dark); /* Fondo oscuro */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alineación arriba para permitir el scroll */
+            min-height: 100vh;
+            background-image: url('https://via.placeholder.com/1920x1080/000000/FFFFFF?text=Fondo+DnD'); /* Imagen de fondo de D&D */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Hace que el fondo se quede fijo al desplazar */
+            position: relative;
+            overflow-y: auto;
+            padding-top: 20px; /* Espacio superior para el contenido */
+        }
+
+        /* Capa de superposición para oscurecer el fondo y mejorar la legibilidad */
+        .background-overlay {
+            position: fixed; /* Fijo para cubrir todo el body fijo */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Oscurece el fondo */
+            z-index: 1;
+        }
+
+        /* --- Contenedor Principal (Simula la 'Hoja de Pergamino') --- */
+        .container {
+            position: relative;
+            z-index: 2; /* Asegura que el contenido esté por encima del overlay */
+            background-color: var(--bg-medium); /* Fondo semi-oscuro para el contenedor principal */
+            border: 3px solid var(--border-color); /* Borde rústico */
+            border-radius: 10px;
+            padding: 2.5rem;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+            max-width: 1200px;
+            width: 90%;
+            margin: 20px auto; /* Centrado y con margen */
+            text-align: center;
+        }
+
+        /* --- Estilo del Título --- */
+        h1 {
+            font-family: 'Cinzel', serif; /* Fuente más imponente para el título */
+            font-size: 3.5rem;
+            color: var(--text-accent);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--text-accent); /* Borde de oro */
+            padding-bottom: 10px;
+        }
+
+        /* --- Formulario de Creación (CRUD: CREATE) --- */
+        #create-form {
+            background-color: var(--card-bg); /* Fondo de tarjeta semitransparente */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        #create-form input[type="text"], 
+        #create-form input[type="number"] {
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        #create-form button {
+            background-color: var(--color-success-medieval);
+            color: white;
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+        }
+        #create-form button:hover {
+            background-color: var(--text-accent);
+            color: var(--bg-dark);
+        }
+
+        /* --- Listado de Enemigos (CRUD: READ) --- */
+        #enemy-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Tarjetas más anchas */
+            gap: 25px;
+            padding: 10px;
+        }
+
+        .enemy-card {
+            background-color: var(--card-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: left;
+        }
+
+        .enemy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .enemy-card.dead {
+            border: 3px dashed var(--color-danger-medieval);
+            opacity: 0.6;
+            background-color: rgba(60, 0, 0, 0.7); /* Rojo oscuro semitransparente para muertos */
+        }
+
+        .enemy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--text-accent);
+            padding-bottom: 5px;
+        }
+
+        .enemy-name {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            color: var(--text-accent);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .hp-text {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--color-success-medieval);
+        }
+        .enemy-card.dead .hp-text {
+            color: var(--color-danger-medieval);
+        }
+
+        .hp-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .hp-controls input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .hp-controls button {
+            padding: 8px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+            color: var(--text-light);
+        }
+
+        .damage-btn {
+            background-color: var(--color-danger-medieval);
+            transition: background-color 0.2s;
+        }
+        .damage-btn:hover { background-color: #ff4d4d; }
+
+        .heal-btn {
+            background-color: var(--color-success-medieval);
+            transition: background-color 0.2s;
+        }
+        .heal-btn:hover { background-color: #4CAF50; }
+
+        /* --- Penalizaciones y Notas --- */
+        .notes-area {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 70px;
+            box-sizing: border-box;
+            margin-top: 5px;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--color-danger-medieval);
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+            display: block;
+            text-decoration: underline;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+        }
+        .delete-btn:hover {
+            color: #ff4d4d;
+        }
+        
+        /* Responsividad básica */
+        @media (max-width: 900px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            #create-form {
+                grid-template-columns: 1fr; /* Una columna en pantallas más pequeñas */
+            }
+            #enemy-list {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-overlay"></div>
+
+    <div class="container">
+      
+
+        <div id="create-form">
+            <input type="text" id="enemy-name" placeholder="Nombre del Enemigo (Ej: Guardia 1)" required>
+            <input type="number" id="enemy-hp" placeholder="HP Inicial (Ej: 11)" required min="1">
+            <input type="number" id="enemy-ac" placeholder="CA (Opcional, Ej: 16)">
+            <button onclick="createEnemy()">Añadir Enemigo</button>
+        </div>
+
+        <div id="enemy-list">
+            </div>
+    </div>
+
+    <script>
+        let enemies = [];
+        let enemyId = 0;
+        const enemyList = document.getElementById('enemy-list');
+
+        // Función para crear un nuevo enemigo (CRUD: CREATE)
+        function createEnemy() {
+            const nameInput = document.getElementById('enemy-name');
+            const hpInput = document.getElementById('enemy-hp');
+            const acInput = document.getElementById('enemy-ac');
+
+            const name = nameInput.value.trim();
+            const maxHp = parseInt(hpInput.value);
+            const ac = acInput.value ? parseInt(acInput.value) : 'N/A';
+            
+            if (!name || isNaN(maxHp) || maxHp <= 0) {
+                alert('Por favor, ingresa un nombre y un HP válido (> 0).');
+                return;
+            }
+
+            const newEnemy = {
+                id: enemyId++,
+                name: name,
+                currentHp: maxHp,
+                maxHp: maxHp,
+                ac: ac,
+                notes: ''
+            };
+
+            enemies.push(newEnemy);
+            renderEnemies();
+
+            // Limpiar formulario
+            nameInput.value = '';
+            hpInput.value = '';
+            acInput.value = '';
+        }
+
+        // Función para renderizar la lista completa de enemigos (CRUD: READ)
+        function renderEnemies() {
+            enemyList.innerHTML = ''; // Limpia la lista actual
+            
+            enemies.forEach(enemy => {
+                const isDead = enemy.currentHp <= 0;
+                
+                const card = document.createElement('div');
+                card.className = `enemy-card ${isDead ? 'dead' : ''}`;
+                card.id = `enemy-${enemy.id}`;
+                
+                // Contenido de la tarjeta
+                card.innerHTML = `
+                    <div class="enemy-header">
+                        <span class="enemy-name">${enemy.name} (CA: ${enemy.ac})</span>
+                        <span class="hp-text">${enemy.currentHp} / ${enemy.maxHp} HP</span>
+                    </div>
+
+                    <div class="hp-controls">
+                        <input type="number" id="damage-amount-${enemy.id}" value="1" min="1" max="99">
+                        <button class="damage-btn" onclick="updateHp(${enemy.id}, -1)">DAÑO</button>
+                        <button class="heal-btn" onclick="updateHp(${enemy.id}, 1)">CURAR</button>
+                    </div>
+
+                    <label for="notes-${enemy.id}">Penalizaciones/Notas:</label>
+                    <textarea 
+                        id="notes-${enemy.id}" 
+                        class="notes-area" 
+                        onchange="updateNotes(${enemy.id}, this.value)"
+                    >${enemy.notes}</textarea>
+
+                    <button class="delete-btn" onclick="deleteEnemy(${enemy.id})">Eliminar Enemigo</button>
+                `;
+                
+                enemyList.appendChild(card);
+            });
+        }
+
+        // Función para actualizar HP (CRUD: UPDATE - HP)
+        function updateHp(id, sign) {
+            const enemy = enemies.find(e => e.id === id);
+            if (!enemy) return;
+            
+            const amountInput = document.getElementById(`damage-amount-${id}`);
+            const amount = parseInt(amountInput.value) || 1;
+            
+            enemy.currentHp += amount * sign; // Si sign es -1, resta; si es 1, suma
+            
+            // Límite de HP (no puede exceder el máximo)
+            if (enemy.currentHp > enemy.maxHp) {
+                enemy.currentHp = enemy.maxHp;
+            }
+
+            // Límite de HP (muerto si es 0 o menos)
+            if (enemy.currentHp < 0) {
+                enemy.currentHp = 0;
+            }
+            
+            renderEnemies(); // Volver a dibujar la interfaz
+        }
+
+        // Función para actualizar notas (CRUD: UPDATE - Notes)
+        function updateNotes(id, notes) {
+            const enemy = enemies.find(e => e.id === id);
+            if (enemy) {
+                enemy.notes = notes;
+            }
+        }
+
+        // Función para eliminar un enemigo (CRUD: DELETE)
+        function deleteEnemy(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar a este enemigo?')) {
+                enemies = enemies.filter(e => e.id !== id);
+                renderEnemies();
+            }
+        }
+
+        // Función auxiliar para inicializar
+        function createEnemyWithData(name, hp, ac) {
+            const newEnemy = {
+                id: enemyId++,
+                name: name,
+                currentHp: hp,
+                maxHp: hp,
+                ac: ac,
+                notes: ''
+            };
+            enemies.push(newEnemy);
+        }
+
+        // Inicializar con los 4 guardias
+        function initialize() {
+            createEnemyWithData("Guardia 1", 20, 10);
+            createEnemyWithData("Guardia 2", 20, 10);
+            createEnemyWithData("Guardia 3", 20, 10);
+            createEnemyWithData("Guardia 4", 20, 10);
+            createEnemyWithData("Capitan", 40, 10); // Líder con más HP
+            renderEnemies(); // Renderiza por primera vez
+        }
+
+        initialize(); // Carga inicial
+    </script>
+</body>
+</html>
