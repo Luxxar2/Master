@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador de Combate D&D 5e</title>
+    <style>
+        :root {
+            --color-primary: #8b0000; /* Rojo Oscuro (Paladín Venganza) */
+            --color-secondary: #008080; /* Teal (Dracónido) */
+            --color-background: #f4f4f9;
+            --color-card-bg: #ffffff;
+            --color-danger: #dc3545;
+            --color-success: #28a745;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--color-background);
+            color: #333;
+        }
+
+        h1 {
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 10px;
+        }
+
+        /* --- Formulario de Creación (CRUD: CREATE) --- */
+        #create-form {
+            background-color: var(--color-card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        #create-form input[type="text"], 
+        #create-form input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #create-form button {
+            background-color: var(--color-success);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #create-form button:hover {
+            background-color: #1e7e34;
+        }
+
+        /* --- Listado de Enemigos (CRUD: READ) --- */
+        #enemy-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .enemy-card {
+            background-color: var(--color-card-bg);
+            border: 2px solid var(--color-secondary);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .enemy-card.dead {
+            border: 2px dashed var(--color-danger);
+            opacity: 0.6;
+            background-color: #fff0f0;
+        }
+
+        .enemy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .enemy-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--color-primary);
+        }
+
+        .hp-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--color-success);
+        }
+        .enemy-card.dead .hp-text {
+            color: var(--color-danger);
+        }
+
+        .hp-controls {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .hp-controls input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .hp-controls button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .damage-btn {
+            background-color: var(--color-danger);
+            color: white;
+        }
+        .heal-btn {
+            background-color: var(--color-secondary);
+            color: white;
+        }
+
+        /* --- Penalizaciones y Notas (CRUD: UPDATE) --- */
+        .notes-area {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 50px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--color-danger);
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            display: block;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Rastreador de Combate D&D 5e</h1>
+
+    <div id="create-form">
+        <input type="text" id="enemy-name" placeholder="Nombre del Enemigo (Ej: Guardia 1)" required>
+        <input type="number" id="enemy-hp" placeholder="HP Inicial (Ej: 11)" required min="1">
+        <input type="number" id="enemy-ac" placeholder="CA (Opcional, Ej: 16)">
+        <button onclick="createEnemy()">Añadir Enemigo</button>
+    </div>
+
+    <div id="enemy-list">
+        </div>
+
+    <script>
+        let enemies = [];
+        let enemyId = 0;
+        const enemyList = document.getElementById('enemy-list');
+
+        // Función para crear un nuevo enemigo (CRUD: CREATE)
+        function createEnemy() {
+            const nameInput = document.getElementById('enemy-name');
+            const hpInput = document.getElementById('enemy-hp');
+            const acInput = document.getElementById('enemy-ac');
+
+            const name = nameInput.value.trim();
+            const maxHp = parseInt(hpInput.value);
+            const ac = acInput.value ? parseInt(acInput.value) : 'N/A';
+            
+            if (!name || isNaN(maxHp) || maxHp <= 0) {
+                alert('Por favor, ingresa un nombre y un HP válido (> 0).');
+                return;
+            }
+
+            const newEnemy = {
+                id: enemyId++,
+                name: name,
+                currentHp: maxHp,
+                maxHp: maxHp,
+                ac: ac,
+                notes: ''
+            };
+
+            enemies.push(newEnemy);
+            renderEnemies();
+
+            // Limpiar formulario
+            nameInput.value = '';
+            hpInput.value = '';
+            acInput.value = '';
+        }
+
+        // Función para renderizar la lista completa de enemigos (CRUD: READ)
+        function renderEnemies() {
+            enemyList.innerHTML = ''; // Limpia la lista actual
+            
+            enemies.forEach(enemy => {
+                const isDead = enemy.currentHp <= 0;
+                
+                const card = document.createElement('div');
+                card.className = `enemy-card ${isDead ? 'dead' : ''}`;
+                card.id = `enemy-${enemy.id}`;
+                
+                // Contenido de la tarjeta
+                card.innerHTML = `
+                    <div class="enemy-header">
+                        <span class="enemy-name">${enemy.name} (CA: ${enemy.ac})</span>
+                        <span class="hp-text">${enemy.currentHp} / ${enemy.maxHp} HP</span>
+                    </div>
+
+                    <div class="hp-controls">
+                        <input type="number" id="damage-amount-${enemy.id}" value="1" min="1" max="99">
+                        <button class="damage-btn" onclick="updateHp(${enemy.id}, -1)">DAÑO</button>
+                        <button class="heal-btn" onclick="updateHp(${enemy.id}, 1)">CURAR</button>
+                    </div>
+
+                    <label for="notes-${enemy.id}">Penalizaciones/Notas:</label>
+                    <textarea 
+                        id="notes-${enemy.id}" 
+                        class="notes-area" 
+                        onchange="updateNotes(${enemy.id}, this.value)"
+                    >${enemy.notes}</textarea>
+
+                    <button class="delete-btn" onclick="deleteEnemy(${enemy.id})">Eliminar Enemigo</button>
+                `;
+                
+                enemyList.appendChild(card);
+            });
+        }
+
+        // Función para actualizar HP (CRUD: UPDATE - HP)
+        function updateHp(id, sign) {
+            const enemy = enemies.find(e => e.id === id);
+            if (!enemy) return;
+            
+            const amountInput = document.getElementById(`damage-amount-${id}`);
+            const amount = parseInt(amountInput.value) || 1;
+            
+            enemy.currentHp += amount * sign; // Si sign es -1, resta; si es 1, suma
+            
+            // Límite de HP (no puede exceder el máximo)
+            if (enemy.currentHp > enemy.maxHp) {
+                enemy.currentHp = enemy.maxHp;
+            }
+
+            // Límite de HP (muerto si es 0 o menos)
+            if (enemy.currentHp < 0) {
+                enemy.currentHp = 0;
+            }
+            
+            renderEnemies(); // Volver a dibujar la interfaz
+        }
+
+        // Función para actualizar notas (CRUD: UPDATE - Notes)
+        function updateNotes(id, notes) {
+            const enemy = enemies.find(e => e.id === id);
+            if (enemy) {
+                enemy.notes = notes;
+            }
+        }
+
+        // Función para eliminar un enemigo (CRUD: DELETE)
+        function deleteEnemy(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar a este enemigo?')) {
+                enemies = enemies.filter(e => e.id !== id);
+                renderEnemies();
+            }
+        }
+
+        // Inicializar con los 4 guardias
+        function initialize() {
+            createEnemyWithData("Guardia 1", 11, 16);
+            createEnemyWithData("Guardia 2", 11, 16);
+            createEnemyWithData("Guardia 3", 11, 16);
+            createEnemyWithData("Guardia 4 (Líder)", 15, 16); // Líder con más HP
+        }
+        
+        // Función auxiliar para inicializar
+        function createEnemyWithData(name, hp, ac) {
+            const newEnemy = {
+                id: enemyId++,
+                name: name,
+                currentHp: hp,
+                maxHp: hp,
+                ac: ac,
+                notes: ''
+            };
+            enemies.push(newEnemy);
+            renderEnemies();
+        }
+
+        initialize(); // Carga inicial de los 4 guardias
+    </script>
+
+</body>
+</html>
