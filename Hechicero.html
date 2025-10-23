@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gilbert el "Susurro del Viento"</title>
+    <style>
+        /* Importar fuentes de Google Fonts para un toque medieval */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap');
+
+        /* --- Variables de Estilo Medieval --- */
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-medium: #2c2c2c;
+            --text-light: #f0e6d2; /* Pergamino */
+            --text-accent: #e5b300; /* Oro */
+            --border-color: #8B4513; /* Marrón para bordes rústicos */
+            --card-bg: rgba(44, 44, 44, 0.8); /* Fondo de tarjeta semitransparente */
+
+            /* Colores específicos del rastreador ajustados al tema */
+            --color-danger-medieval: #9c0f0f; /* Rojo oscuro de daño */
+            --color-success-medieval: #1e7e34; /* Verde oscuro de curación */
+        }
+
+        /* --- Estilos de Fondo y Cuerpo --- */
+        body {
+            margin: 0;
+            font-family: 'MedievalSharp', cursive; /* Fuente principal para el cuerpo */
+            color: var(--text-light);
+            background-color: var(--bg-dark); /* Fondo oscuro */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alineación arriba para permitir el scroll */
+            min-height: 100vh;
+            background-image: url('https://via.placeholder.com/1920x1080/000000/FFFFFF?text=Fondo+DnD'); /* Imagen de fondo de D&D */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Hace que el fondo se quede fijo al desplazar */
+            position: relative;
+            overflow-y: auto;
+            padding-top: 20px; /* Espacio superior para el contenido */
+        }
+
+        /* Capa de superposición para oscurecer el fondo y mejorar la legibilidad */
+        .background-overlay {
+            position: fixed; /* Fijo para cubrir todo el body fijo */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Oscurece el fondo */
+            z-index: 1;
+        }
+
+        /* --- Contenedor Principal (Simula la 'Hoja de Pergamino') --- */
+        .container {
+            position: relative;
+            z-index: 2; /* Asegura que el contenido esté por encima del overlay */
+            background-color: var(--bg-medium); /* Fondo semi-oscuro para el contenedor principal */
+            border: 3px solid var(--border-color); /* Borde rústico */
+            border-radius: 10px;
+            padding: 2.5rem;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+            max-width: 1200px;
+            width: 90%;
+            margin: 20px auto; /* Centrado y con margen */
+            text-align: center;
+        }
+
+        /* --- Estilo del Título --- */
+        h1 {
+            font-family: 'Cinzel', serif; /* Fuente más imponente para el título */
+            font-size: 3.5rem;
+            color: var(--text-accent);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--text-accent); /* Borde de oro */
+            padding-bottom: 10px;
+        }
+
+        /* --- Formulario de Creación (CRUD: CREATE) --- */
+        #create-form {
+            background-color: var(--card-bg); /* Fondo de tarjeta semitransparente */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        #create-form input[type="text"], 
+        #create-form input[type="number"] {
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        #create-form button {
+            background-color: var(--color-success-medieval);
+            color: white;
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+        }
+        #create-form button:hover {
+            background-color: var(--text-accent);
+            color: var(--bg-dark);
+        }
+
+        /* --- Listado de Enemigos (CRUD: READ) --- */
+        #enemy-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Tarjetas más anchas */
+            gap: 25px;
+            padding: 10px;
+        }
+
+        .enemy-card {
+            background-color: var(--card-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: left;
+        }
+
+        .enemy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .enemy-card.dead {
+            border: 3px dashed var(--color-danger-medieval);
+            opacity: 0.6;
+            background-color: rgba(60, 0, 0, 0.7); /* Rojo oscuro semitransparente para muertos */
+        }
+
+        .enemy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--text-accent);
+            padding-bottom: 5px;
+        }
+
+        .enemy-name {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            color: var(--text-accent);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .hp-text {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--color-success-medieval);
+        }
+        .enemy-card.dead .hp-text {
+            color: var(--color-danger-medieval);
+        }
+
+        .hp-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .hp-controls input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .hp-controls button {
+            padding: 8px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+            color: var(--text-light);
+        }
+
+        .damage-btn {
+            background-color: var(--color-danger-medieval);
+            transition: background-color 0.2s;
+        }
+        .damage-btn:hover { background-color: #ff4d4d; }
+
+        .heal-btn {
+            background-color: var(--color-success-medieval);
+            transition: background-color 0.2s;
+        }
+        .heal-btn:hover { background-color: #4CAF50; }
+
+        /* --- Penalizaciones y Notas --- */
+        .notes-area {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 70px;
+            box-sizing: border-box;
+            margin-top: 5px;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--color-danger-medieval);
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+            display: block;
+            text-decoration: underline;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+        }
+        .delete-btn:hover {
+            color: #ff4d4d;
+        }
+        /* --- Estilo de la Carta Estática (Sin CRUD) --- */
+        .static-card {
+            background-color: var(--card-bg);
+            border: 3px solid var(--text-accent); /* Borde dorado para distinguirlo */
+            border-radius: 10px;
+            padding: 20px 25px; /* Más padding para contenido */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            margin: 30px auto; /* Centrado y con espacio */
+            max-width: 400px; /* Ancho más compacto */
+            text-align: left;
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .static-card h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2em;
+            color: var(--text-accent);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 5px;
+            text-align: center;
+        }
+
+        .static-card p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+
+        .static-card p strong {
+            color: var(--text-accent); /* Resalta las etiquetas */
+            font-family: 'Cinzel', serif;
+            margin-right: 5px;
+        }
+        /* Responsividad básica */
+        @media (max-width: 900px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            #create-form {
+                grid-template-columns: 1fr; /* Una columna en pantallas más pequeñas */
+            }   
+            #enemy-list {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-overlay"></div>
+
+    <div class="container">
+        <h1>Gilbert el "Susurro del Viento"</h1>
+        
+       <div id="create-form">
+           <!--  <input type="text" id="enemy-name" placeholder="Nombre" required>
+            <input type="number" id="enemy-hp" placeholder="Usos" required min="1">
+            <input type="number" id="enemy-ac" placeholder="">
+            <button onclick="createEnemy()">Añadir</button>
+            !-->
+            <div id="enemy-list">
+                
+        </div>
+            </div>
+            <div class="static-card">
+            <h2>Mi Aventurero</h2>
+            <p><strong>Nombre:</strong> Elandra</p>
+            <p><strong>Alias:</strong> La Guardiana</p>
+            <p><strong>Raza:</strong> Elfa De los Bosques</p>
+            <p><strong>Clase:</strong> Mago</p>
+            <p><strong>Trasfondo:</strong> Erurito</p>
+             <p><strong>Iniciativa :</strong> + 3</p>
+              <p><strong>Velocidad :</strong> 10,5 m</p>
+               <p><strong>Percepcion Pasiva : </strong> 13</p>
+                
+
+            <p><strong>Apariencia</strong>
+                <br>1.72m
+                <br>Ojos Verdes Esmeralda (cambian con el clima)
+                <br>Pelo Colorado con Negro
+                <br>Piel Tostada
+                <br>Vestimenta Rosa y Negra
+                <p><strong>Personalidad</strong>
+                <br>Alineamiento: Legal Bueno
+                <br>Respetuosa y CHARLATANA                
+                <br>Curiosa y Alegre
+                <br>Joven (110 años)
+            </p>
+            </div>
+            <div class="static-card">
+            <h2>Raza:Elfa De los Bosques</h2>
+            <p><strong>Los elfos de los bosques llevan la magia de los bosques 
+primigenios en su interior. Se les conoce por otros 
+muchos nombres, como elfos salvajes, elfos verdes y elfos 
+silvanos. .</strong> </p>
+            <p><strong>Sentidos Agudos:</strong>  Tienes competencia en la habilidad 
+de Percepción, Perspicacia o Supervivencia. </p>
+<p><strong>Mascara de la Naturaleza:</strong>  Puedes intentar esconderte incluso cuando solo estás ligeramente oscurecido por follaje, lluvia intensa, nieve que cae, niebla o cualquier otro fenómeno natural.Debe hacer una tirada de Sigilo </p>
+            <p><strong>Vision en la Oscuridad</strong> Aumenta a 18 m</p>
+            <p><strong>Pies Ligeros</strong> Tu velocidad aumenta a 10,5 m. También conoces el truco 
+saber druídico. </p>
+            <p><strong>Linaje Feerico</strong>  Tienes ventaja en las tiradas de salvación 
+para evitar o poner fin al estado de hechizado. </p>
+            <p><strong>Trance</strong>  No necesitas dormir y la magia no puede 
+dormirte. Puedes finalizar un descanso largo en 4 horas 
+si las pasas en una meditación similar a un trance, tiempo 
+durante el cual conservas la consciencia.</p>
+            
+                
+            </p>
+              
+        </div>
+        <div class="static-card">
+            <h2>Clase: Mago</h2>
+            <p><strong>Como estudiante de magia arcana que eres, has aprendido 
+a lanzar conjuros.</strong></p>
+            <p><strong>Espacio de Conjuros : </strong>2 </p>
+            <p><strong> Recuperacion Arcana</strong>  Tras finalizar un descanso corto, 
+puedes elegir 1 espacio de conjuro gastado y recuperarlo. 1 vez al dia
+            </p>
+            </div>
+
+
+         <div class="static-card">
+            <h2>Transfondo: Erudito</h2>
+           
+<p><strong>  </strong>Pasaste tus años formativos viajando entre palacetes 
+y monasterios, desempeñando diversos oficios y servicios 
+para que te dejaran acceder 
+bibliotecas. 
+muchas 
+Dedicaste 
+tardes a estudiar libros y pergaminos para 
+adquirir conocimientos acerca del multiverso e incluso 
+los rudimentos de la magia, y tu mente ansía mas</p>
+<p><strong>Puntuacion de Caracteristicas</strong> Inteligencia, Sabiduría, Carisma</p>
+<p><strong>Competencia en Habilidades</strong>  Conocimiento arcano e Historia  </p>
+            <p><strong>Competencia con herramientas: </strong> Suministros de calígrafo</p>
+            <p><strong>Dote: </strong> Iniciado en la Magia</p>
+            
+           
+            
+           
+            </div>
+             <div class="static-card">
+            <h2>Trucos</h2>
+            <p><strong>Descarga de Fuego: </strong> Alcance: 36 m.  <br>
+                Arrojas una mota de fuego a una criatura u objeto dentro 
+del alcance. Haz un ataque de conjuro a distancia contra 
+el objetivo. Si acierta, el objetivo recibe 1d10 de daño de 
+fuego. Los objetos inflamables a los que acierte el conjuro 
+empezarán a arder si nadie los lleva o viste.Debe hacer una tirada de ataque que seria 
+1d20 + 4
+ </p>
+            <p><strong> </strong> 
+ </p>
+ <p> <strong>Mano de Mago:</strong> </p>
+        
+<p><strong>Dormir:</strong>Alcance: 18m. <br>
+    Todas las criaturas de tu elección en una esfera de 1,5 m 
+de radio centrada en un punto dentro del alcance deben 
+superar una tirada de salvación de Sabiduría o tendrán 
+el estado de incapacitadas hasta el final de su siguiente 
+turno, momento en el que deberán repetir la tirada de 
+salvación. Si un objetivo falla la segunda tirada, tendrá 
+el estado de inconsciente hasta que termine el conjuro. 
+El conjuro termina sobre un objetivo si recibe daño 
+o si alguien a 1,5 m o menos de él emplea una acción 
+para zarandearlo y poner fin al efecto del conjuro. 
+Las criaturas que no duermen, como los elfos, o que 
+tengan inmunidad al estado de cansancio superan 
+automáticamente las tiradas de salvación contra este 
+conjuro.
+<br>
+ <strong>Efecto Clave:</strong> Si acierta, el objetivo no puede usar Reacciones, permitiendo a la Elfa (o a un aliado) alejarse sin provocar un Ataque de Oportunidad.
+
+
+
+            </div>
+<div class="static-card">
+            <h2>Conjuros</h2>
+             <p><strong>Aptitud mágica:</strong>La Inteligencia </p>
+            <p><strong>Armadurade Mago</strong> Tocas a una criatura voluntaria que no lleve armadura. 
+Hasta que el conjuro termine, la CA base del objetivo pasa 
+a ser de 13 más su modificador por Destreza. El conjuro 
+termina antes si el objetivo se pone una armadura. </p>
+
+           <p><strong>Dormir:</strong>Todas las criaturas de tu elección en una esfera de 1,5 m 
+de radio centrada en un punto dentro del alcance deben 
+superar una tirada de salvación de Sabiduría o tendrán 
+el estado de incapacitadas hasta el final de su siguiente 
+turno, momento en el que deberán repetir la tirada de 
+salvación. Si un objetivo falla la segunda tirada, tendrá 
+el estado de inconsciente hasta que termine el conjuro. 
+El conjuro termina sobre un objetivo si recibe daño 
+o si alguien a 1,5 m o menos de él emplea una acción 
+para zarandearlo y poner fin al efecto del conjuro. 
+Las criaturas que no duermen, como los elfos, o que 
+tengan inmunidad al estado de cansancio superan 
+automáticamente las tiradas de salvación contra este 
+conjuro. 
+                
+            </p>
+            <p><strong>Rayo de Escarcha:</strong>Lanzas un rayo helado de luz blanquiazul hacia una 
+criatura dentro del alcance. Haz un ataque de conjuro 
+a distancia contra el objetivo. Si acierta, el objetivo recibe 
+1d8 de daño de frío y su velocidad se reduce en 3 m hasta 
+el principio de tu siguiente turno.  
+ </p>
+</div>
+
+            
+       
+            
+             <div class="static-card">
+             <h2>Trucos y Conjuros</h2>
+           
+<p><strong>(T)Descarga de Fuego V S </strong>1d20 +4</p>
+<p><strong>(T)Daño</strong>1d10</p><br>
+<p><strong>(T)Rafaga de Escarcha V S</strong>1d20 + 4</p>
+<p><strong>(T)Daño:</strong>1d8 FRIO , ralentizado a 3m</p><br>
+<p><strong>(C)Armadura de Mago</strong> 1d20 + 4</p>
+<p><strong>(C)Dormir</strong> Enemigos : Sabiduria de 12</p>
+
+
+
+            
+            </div>
+            <div class="static-card">
+                 <h2>Armas</h2>
+           
+<p><strong>Daga (Arma Principal)</strong>6 + 1d4  </p>
+<p><strong>Daga (Arma Secundaria)</strong>4 + 1d4</p>
+<p><strong>Hoz</strong>3 + 1d4  </p>
+            
+            </div>
+             <div class="static-card">
+                 <h2>Competencias</h2>
+           
+<p><strong>Armas Drow  </strong> Estoques,Espadas Cortas,Ballesta de mano</p>
+<p><strong>Armas Simples</strong> Garrote,Dagas,Javalinas,Maza,Baston</p>
+<p><strong>Armadura Ligera</strong> </p>
+            
+            </div>
+            
+           
+            
+           
+            </div>
+        </div>
+           
+             
+    </div>
+    
+
+    <script>
+        let enemies = [];
+        let enemyId = 0;
+        const enemyList = document.getElementById('enemy-list');
+
+        // Función para crear un nuevo enemigo (CRUD: CREATE)
+        function createEnemy() {
+            const nameInput = document.getElementById('enemy-name');
+            const hpInput = document.getElementById('enemy-hp');
+            const acInput = document.getElementById('enemy-ac');
+
+            const name = nameInput.value.trim();
+            const maxHp = parseInt(hpInput.value);
+            const ac = acInput.value ? parseInt(acInput.value) : 'N/A';
+            
+            if (!name || isNaN(maxHp) || maxHp <= 0) {
+                alert('Por favor, ingresa un nombre y un HP válido (> 0).');
+                return;
+            }
+
+            const newEnemy = {
+                id: enemyId++,
+                name: name,
+                currentHp: maxHp,
+                maxHp: maxHp,
+                ac: ac,
+                notes: ''
+            };
+
+            enemies.push(newEnemy);
+            renderEnemies();
+
+            // Limpiar formulario
+            nameInput.value = '';
+            hpInput.value = '';
+            acInput.value = '';
+        }
+
+        // Función para renderizar la lista completa de enemigos (CRUD: READ)
+        function renderEnemies() {
+            enemyList.innerHTML = ''; // Limpia la lista actual
+            
+            enemies.forEach(enemy => {
+                const isDead = enemy.currentHp <= 0;
+                
+                const card = document.createElement('div');
+                card.className = `enemy-card ${isDead ? 'dead' : ''}`;
+                card.id = `enemy-${enemy.id}`;
+                
+                // Contenido de la tarjeta
+                card.innerHTML = `
+                    <div class="enemy-header">
+                        <span class="enemy-name">${enemy.name} (CA: ${enemy.ac})</span>
+                        <span class="hp-text">${enemy.currentHp} / ${enemy.maxHp} HP</span>
+                    </div>
+
+                    <div class="hp-controls">
+                        <input type="number" id="damage-amount-${enemy.id}" value="1" min="1" max="99">
+                        <button class="damage-btn" onclick="updateHp(${enemy.id}, -1)">DAÑO</button>
+                        <button class="heal-btn" onclick="updateHp(${enemy.id}, 1)">CURAR</button>
+                    </div>
+
+                    <label for="notes-${enemy.id}">Penalizaciones/Notas:</label>
+                    <textarea 
+                        id="notes-${enemy.id}" 
+                        class="notes-area" 
+                        onchange="updateNotes(${enemy.id}, this.value)"
+                    >${enemy.notes}</textarea>
+
+                    <button class="delete-btn" onclick="deleteEnemy(${enemy.id})">Eliminar</button>
+                `;
+                
+                enemyList.appendChild(card);
+            });
+            
+        }
+
+        // Función para actualizar HP (CRUD: UPDATE - HP)
+        function updateHp(id, sign) {
+            const enemy = enemies.find(e => e.id === id);
+            if (!enemy) return;
+            
+            const amountInput = document.getElementById(`damage-amount-${id}`);
+            const amount = parseInt(amountInput.value) || 1;
+            
+            enemy.currentHp += amount * sign; // Si sign es -1, resta; si es 1, suma
+            
+            // Límite de HP (no puede exceder el máximo)
+            if (enemy.currentHp > enemy.maxHp) {
+                enemy.currentHp = enemy.maxHp;
+            }
+
+            // Límite de HP (muerto si es 0 o menos)
+            if (enemy.currentHp < 0) {
+                enemy.currentHp = 0;
+            }
+            
+            renderEnemies(); // Volver a dibujar la interfaz
+        }
+
+        // Función para actualizar notas (CRUD: UPDATE - Notes)
+        function updateNotes(id, notes) {
+            const enemy = enemies.find(e => e.id === id);
+            if (enemy) {
+                enemy.notes = notes;
+            }
+        }
+
+        // Función para eliminar un enemigo (CRUD: DELETE)
+        function deleteEnemy(id) {
+            if (confirm('¿Eliminar?')) {
+                enemies = enemies.filter(e => e.id !== id);
+                renderEnemies();
+            }
+        }
+
+        // Función auxiliar para inicializar
+        function createEnemyWithData(name, hp, ac) {
+            const newEnemy = {
+                id: enemyId++,
+                name: name,
+                currentHp: hp,
+                maxHp: hp,
+                ac: ac,
+                notes: ''
+            };
+            enemies.push(newEnemy);
+        }
+
+        // Inicializar con los 4 guardias
+        function initialize() {
+            createEnemyWithData("Gilbert", 7, 12);
+            
+            renderEnemies(); // Renderiza por primera vez
+        }
+
+        initialize(); // Carga inicial
+    </script>
+</body>
+</html>
