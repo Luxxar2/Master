@@ -1,0 +1,150 @@
+/* Importar fuentes de Google Fonts para un toque medieval */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap');
+
+:root {
+    --bg-dark: #1a1a1a;
+    --bg-medium: #2c2c2c;
+    --text-light: #f0e6d2; /* Pergamino */
+    --text-accent: #e5b300; /* Oro */
+    --border-color: #8B4513; /* Marrón para bordes rústicos */
+    --card-bg: rgba(44, 44, 44, 0.8); /* Fondo de tarjeta semitransparente */
+}
+
+body {
+    margin: 0;
+    font-family: 'MedievalSharp', cursive; /* Fuente principal para el cuerpo */
+    color: var(--text-light);
+    background-color: var(--bg-dark); /* Fondo oscuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('https://via.placeholder.com/1920x1080/000000/FFFFFF?text=Fondo+DnD'); /* Imagen de fondo de D&D */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Hace que el fondo se quede fijo al desplazar */
+    position: relative;
+    overflow-y: auto; /* Permite desplazamiento si el contenido es largo */
+}
+
+/* Capa de superposición para oscurecer el fondo y mejorar la legibilidad */
+.background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Oscurece el fondo */
+    z-index: 1;
+}
+
+.container {
+    position: relative;
+    z-index: 2; /* Asegura que el contenido esté por encima del overlay */
+    background-color: var(--bg-medium); /* Fondo semi-oscuro para el contenedor principal */
+    border: 3px solid var(--border-color); /* Borde rústico */
+    border-radius: 10px;
+    padding: 2.5rem;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+    max-width: 1000px;
+    margin: 20px; /* Margen para pantallas pequeñas */
+    text-align: center;
+}
+
+.main-header h1 {
+    font-family: 'Cinzel', serif; /* Fuente más imponente para el título */
+    font-size: 3.5rem;
+    color: var(--text-accent);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 1rem;
+}
+
+.main-header p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.character-selection h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    color: var(--text-accent);
+    margin-bottom: 2.5rem;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.character-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 4 columnas, se ajusta a menos si no hay espacio */
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.character-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: var(--text-light);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.character-card:hover {
+    transform: translateY(-8px) scale(1.03); /* Efecto de "levantamiento" */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    border-color: var(--text-accent); /* Borde dorado al pasar el ratón */
+}
+
+.character-card img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; /* Imágenes circulares */
+    border: 3px solid var(--text-accent);
+    object-fit: cover;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.character-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--text-accent);
+    margin-top: 0.5rem;
+    margin-bottom: 0.8rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.character-card p {
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: justify;
+}
+
+.main-footer {
+    font-size: 0.9rem;
+    color: rgba(var(--text-light), 0.7);
+    margin-top: 3rem;
+    border-top: 1px solid rgba(var(--border-color), 0.5);
+    padding-top: 1.5rem;
+}
+
+/* Responsividad básica */
+@media (max-width: 768px) {
+    .main-header h1 {
+        font-size: 2.5rem;
+    }
+    .character-selection h2 {
+        font-size: 1.8rem;
+    }
+    .character-options {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+    }
+    .container {
+        padding: 1.5rem;
+    }
+    
+}
